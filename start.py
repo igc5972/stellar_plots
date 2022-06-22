@@ -15,13 +15,12 @@ from astroquery.sdss import SDSS
 ##################################################################################
 
 #a completely random star I selected
-ra =  10.187604
-dec = 0.21871262
+ra =  1087604
+dec = 0.71262
 
 
 #coordinates of star to use for testing
 test_crd = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
-
 
 
 
@@ -34,14 +33,19 @@ def get_spectrum(crd):
     Returns:  The wavelength and flux of the SDSS spectrum
     '''
 
-    sp = SDSS.get_spectra(coordinates = crd, radius=2*u.arcsec)[0][1]
+    #Catch TypeErrors for objects that do not exist in SDSS
+    try:
+        sp = SDSS.get_spectra(coordinates = crd, radius=2*u.arcsec)[0][1]
 
-    sp_data = sp.data
+        sp_data = sp.data
 
-    sp_flux = sp_data.flux
-    sp_lambda = 10**sp_data.loglam #lambda is returned in log space
+        sp_flux = sp_data.flux
+        sp_lambda = 10**sp_data.loglam #lambda is returned in log space
 
-    return(sp_lambda, sp_flux)
+        return(sp_lambda, sp_flux)
+
+    except(ValueError, RuntimeError, TypeError):
+        return(-99, -99)
 
 
 
@@ -49,7 +53,6 @@ def get_spectrum(crd):
 ##################################################################################
 ### FUNCTION: PLOT THE SPECTRUM
 ##################################################################################
-
 def plot_spectrum(wave, flux):
     '''
     Inputs:  Two lists, one for the wavelength and one for the fluxes in the spectrum
