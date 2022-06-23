@@ -14,16 +14,10 @@ import matplotlib.gridspec as gridspec
 
 
 
-
-##################################################################################
-### CENTERING AXES
-##################################################################################
-
-
 ##################################################################################
 ### PLOTTING FUNCTION
 ##################################################################################
-def plotting(wave, flux, teff, lum, ra, dec, z):
+def plotting(wave, flux, teff, logg, ra, dec, z):
     '''Plotting
 
     Make a figure with subplots for each of the data products pulled
@@ -38,10 +32,11 @@ def plotting(wave, flux, teff, lum, ra, dec, z):
         z    (float):  Float. Redshift of source.
 
     Returns:
-        None. 
+        fig (Figure object) 
     '''
 
-    plt.figure(figsize = (10, 8))
+
+    fig = plt.figure(figsize = (10, 8))
     G = gridspec.GridSpec(20, 4)
     G.update(wspace=0.5, hspace=2.5) #include whitespace around plots
 
@@ -63,15 +58,22 @@ def plotting(wave, flux, teff, lum, ra, dec, z):
 
 
 
+
     ### HR Diagram 
-    ax2.set_xlabel(r'$\rm{Effective Temperature}$', fontsize = 14)
-    ax2.set_ylabel(r'$\rm{Luminosity}$', fontsize = 14)
-    if not teff < 0 or lum < 0: #handle case of no available data
+    ax2.set_xlabel(r'$\rm{T_\mathrm{eff} \ [K]}$', fontsize = 14)
+    ax2.set_ylabel(r'$\mathrm{Log(g) \ [dex]}$', fontsize = 14)
+
+    if teff < 0: #handle case of no available data
         ax2.set_ylim(0, 10)
         ax2.set_xlim(0, 100)
         ax2.annotate('No HR Data Available', (3, 5), xytext = (3, 5), fontsize = 20)
     else:
-        ax2.scatter(teff, lum, color = 'red', marker = 's')
+        ax2.scatter(teff, logg, color = 'red', marker = 's', zorder = 1E6)
+
+        #Plot the HR background of full Gaia Datasource
+        full_t, full_g = np.loadtxt('./data/full_hr.txt', skiprows = 1, unpack = True)
+        ax2.scatter(full_t, full_g, color = 'gray')
+
     
 
 
@@ -83,17 +85,10 @@ def plotting(wave, flux, teff, lum, ra, dec, z):
     ax3.annotate("Ra:  " + str(ra), (2, 90), xytext = (2, 90), fontsize = 14, color = 'k')
     ax3.annotate("Dec: " + str(dec), (2, 80), xytext = (2, 80), fontsize = 14, color = 'k')
     ax3.annotate("z:     " + str(z), (2, 70), xytext = (2, 70), fontsize = 14, color = 'k')
-    
 
 
 
-
-
-    ### to be determined
-
-
-
-    plt.show()
+    return fig
 
 
 
@@ -107,7 +102,10 @@ wave = -99
 flux = -99
 ra = 1.12312
 dec = 123.32132
+z = 1.3
+t = 3.478500000000000000e+03 
+g = 4.700000000000000178e+00
 
-plotting(wave, flux, 4, 5, ra, dec, 1.3)
+plotting(wave, flux, t, g, ra, dec, z)
 
 
