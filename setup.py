@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages, Extension
-import numpy, sys
+import numpy
+import sys
 
 setup(
     name='stellar_plots',
