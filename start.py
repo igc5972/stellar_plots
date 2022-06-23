@@ -8,6 +8,31 @@ from astropy import units as u
 from astropy.io import fits
 from astroquery.sdss import SDSS
 from astroquery.gaia import Gaia
+from astroquery.vizier import Vizier
+
+
+ras=[ 81.66624828,  15.93297599,  94.68759165]
+decs=[-57.15631429, -70.87244641, -63.50390637]
+ra =  10.187604
+dec = 0.21871262
+GAIA_CATALOG='I/345/gaia2'
+GAIA_CATALOG='I/355/gaiadr3'
+SDSS_CATALOG='V/147/sdss12'
+
+test_crd = SkyCoord(ra=ras*u.deg, dec=decs*u.deg)
+cat=Vizier.query_region(test_crd, catalog=GAIA_CATALOG, radius=1*u.arcsecond)
+print(cat)
+cat=cat.to_pandas()
+
+print(cat[['RA_ICRS','DE_ICRS','Source','logg','Teff','SDSS13']])
+print('\n')
+cat=Vizier.query_region(test_crd, catalog=SDSS_CATALOG, radius=1*u.arcsecond)
+cat=cat[0].to_pandas()
+
+print(cat['RA_ICRS'][0],cat['DE_ICRS'][0],cat['SDSS12'][0])
+
+exit()
+
 # Gaia.MAIN_GAIA_TABLE = "gaiadr2.gaia_source"  # Reselect Data Release 2, default
 ra =  10.187604
 dec = 0.21871262
@@ -67,6 +92,7 @@ workflow :
 - use SDSS to get their
 
 '''
+
 
 def get_params(N=1):
     f = open('query.txt','r')
