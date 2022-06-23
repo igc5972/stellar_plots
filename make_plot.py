@@ -32,11 +32,11 @@ def plotting(wave, flux, teff, logg, ra, dec, z):
         z    (float):  Float. Redshift of source.
 
     Returns:
-        None. 
+        fig (Figure object) 
     '''
 
 
-    plt.figure(figsize = (10, 8))
+    fig = plt.figure(figsize = (10, 8))
     G = gridspec.GridSpec(20, 4)
     G.update(wspace=0.5, hspace=2.5) #include whitespace around plots
 
@@ -88,7 +88,7 @@ def plotting(wave, flux, teff, logg, ra, dec, z):
 
 
 
-    plt.show()
+    return fig
 
 
 
