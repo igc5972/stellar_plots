@@ -1,0 +1,13 @@
+numpy
+matplotlib
+requests
+astrapy
+astroquery
+urllib
+http
+requests
+os
+sys
+re
+json
+time
