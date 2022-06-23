@@ -10,6 +10,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import io
+import math
 
 
 
@@ -17,7 +19,7 @@ import matplotlib.gridspec as gridspec
 ##################################################################################
 ### PLOTTING FUNCTION
 ##################################################################################
-def plotting(wave, flux, teff, logg, ra, dec, z):
+def plotting(wave, flux, teff, logg, ra, dec, days, norm_flux):
     '''Plotting
 
     Make a figure with subplots for each of the data products pulled
@@ -40,21 +42,37 @@ def plotting(wave, flux, teff, logg, ra, dec, z):
     G = gridspec.GridSpec(20, 4)
     G.update(wspace=0.5, hspace=2.5) #include whitespace around plots
 
-    ax1 = plt.subplot(G[12:,:]) #spectrum
-    ax2 = plt.subplot(G[:10,0:2]) #HRD
-    ax3 = plt.subplot(G[:10,2:4]) #to be determined
+    ax1 = fig.add_subplot(G[10:14,:]) #spectrum
+    ax1 = fig.axes[0]
+    ax2 = fig.add_subplot(G[:8,0:2]) #HRD
+    ax2 = fig.axes[1]
+    ax3 = fig.add_subplot(G[:8,2:4]) #info
+    ax3 = fig.axes[2]
+    ax4 = fig.add_subplot(G[16:, :])
+    ax4 = fig.axes[3]
 
 
 
     ### Spectrum
     ax1.set_xlabel(r'$\rm{Wavelength \ [\AA]}$', fontsize = 14)
-    ax1.set_ylabel(r'$\mathrm{Flux \ [arbitrary units]}$', fontsize = 14)
+    ax1.set_ylabel(r'$\mathrm{Normalized Flux}$', fontsize = 14)
     if not isinstance(wave, (np.ndarray, list, set,) ): #handle case of no available data
         ax1.set_ylim(0, 10)
         ax1.set_xlim(0, 100)
-        ax1.annotate('No Spectrum Data Available', (25, 4), xytext = (25, 4), fontsize = 20)
+        ax1.annotate('No Spectrum Available', (25, 4), xytext = (25, 4), fontsize = 20)
     else:
+        flux = [f/max(flux) for f in flux] #normalize flux for plotting
         ax1.plot(wave, flux, lw = 2, color = 'k')
+
+    ### Light Curve
+    ax4.set_xlabel(r'$\rm{Time [Days]}$', fontsize = 14)
+    ax4.set_ylabel(r'$\mathrm{Normalized Flux}$', fontsize = 14)
+    if not isinstance(days, (np.ndarray, list, set,) ): #handle case of no available data
+        ax4.set_ylim(0, 10)
+        ax4.set_xlim(0, 100)
+        ax4.annotate('No Light Curve Available', (25, 4), xytext = (25, 4), fontsize = 20)
+    else:
+        ax4.plot(days, norm_flux, lw = 2, color = 'k')
 
 
 
@@ -63,7 +81,7 @@ def plotting(wave, flux, teff, logg, ra, dec, z):
     ax2.set_xlabel(r'$\rm{T_\mathrm{eff} \ [K]}$', fontsize = 14)
     ax2.set_ylabel(r'$\mathrm{Log(g) \ [dex]}$', fontsize = 14)
 
-    if teff < 0: #handle case of no available data
+    if teff < 0 or math.isnan(teff) == True or math.isnan(logg) == True: #handle case of no available data
         ax2.set_ylim(0, 10)
         ax2.set_xlim(0, 100)
         ax2.annotate('No HR Data Available', (3, 5), xytext = (3, 5), fontsize = 20)
@@ -72,40 +90,29 @@ def plotting(wave, flux, teff, logg, ra, dec, z):
 
         #Plot the HR background of full Gaia Datasource
         full_t, full_g = np.loadtxt('./data/full_hr.txt', skiprows = 1, unpack = True)
-        ax2.scatter(full_t, full_g, color = 'gray')
+        ax2.scatter(full_t, full_g, color = 'gray', s = 2)
+        ax2.invert_xaxis()
 
     
 
 
-    ### Image?
+    ### Info
     ax3.set_xticks([])
     ax3.set_yticks([])
     ax3.set_ylim(0, 100)
     ax3.set_xlim(0, 100)
-    ax3.annotate("Ra:  " + str(ra), (2, 90), xytext = (2, 90), fontsize = 14, color = 'k')
-    ax3.annotate("Dec: " + str(dec), (2, 80), xytext = (2, 80), fontsize = 14, color = 'k')
-    ax3.annotate("z:     " + str(z), (2, 70), xytext = (2, 70), fontsize = 14, color = 'k')
+    ax3.annotate(r"$\bf{Quick Stats: }$", (2, 90), xytext = (2, 90), fontsize = 14, color = 'k')
+    ax3.annotate("Ra:  " + str(ra), (2, 80), xytext = (2, 80), fontsize = 14, color = 'k')
+    ax3.annotate("Dec: " + str(dec), (2, 70), xytext = (2, 70), fontsize = 14, color = 'k')
+
+    
+    #Make a temporary file to hold the plot in
+    temp = io.BytesIO()
+    plt.savefig(temp, format="png")
+    temp.seek(0)
+    
+    return temp
 
 
 
-    return fig
-
-
-
-
-##################################################################################
-### TESTING
-##################################################################################
-
-#made up data for testing
-wave = -99
-flux = -99
-ra = 1.12312
-dec = 123.32132
-z = 1.3
-t = 3.478500000000000000e+03 
-g = 4.700000000000000178e+00
-
-plotting(wave, flux, t, g, ra, dec, z)
-
-
+    

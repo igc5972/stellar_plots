@@ -6,8 +6,11 @@
 ### PURPOSE: Import Statements
 ##################################################################################
 from matplotlib.backends.backend_pdf import PdfPages
-from make_plot.py import plotting
-from utils.py import *
+from make_plot import plotting
+from utils import *
+from PIL import Image
+import io
+
 
 
 
@@ -27,20 +30,44 @@ def output_figures(input_file, output_save_dir_plus_name):
         None
     '''
 
+    pp = PdfPages(output_save_dir_plus_name) #directory to save output flipbook to
     
-    pp = PdfPages(save_dir_plus_name) #directory to save output flipbook to
 
-    ras, decs = np.loadtxt(list, unpack = True, skiprows = 1)
-    temp, gmag = {function call to Gaia}
-    wave, flux = {function call to SDSS}
-    ....
 
-    for i in range(len(ras)):
-        figure = plotting(args...)
-        pp.savefig(figure)
+    #Open the coordinates from the user file
+    ras, decs = read_table(input_file)
 
+    no_sources = len(ras)
+
+    #Loop through the coordinates for the sources
+    for idx, (r, d) in enumerate(zip(ras, decs)):
+
+        source, temp, radius, lum = load_gaia(r, d)
+        sdss_id = load_sdss(r, d)
+        wave, flux = get_spectrum(r, d)
+        days, norm_flux = -99, -99
+
+        print(temp, lum)
+
+        #Call function to make plot
+        temp_img = plotting(wave, flux, temp, lum, r, d, days, norm_flux)
+
+        #Read plot in as image and save
+        fig, ax = plt.subplots(figsize = (12, 8))
+
+        im = Image.open(temp_img)
+
+        ax.imshow(im)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        pp.savefig(fig)
+
+        print("Done with: " + str(idx+1) + " out of " + str(no_sources) + " Sources")
+    
     pp.close()
-        
-        
-        
-    
+
+
+
+output_figures("/Users/astro/Desktop/sample.csv", "/Users/astro/Desktop/test.pdf")
+

@@ -2,6 +2,7 @@
 ### IMPORT STATEMENTS
 ##################################################################################
 import numpy as np
+import pandas as pd
 import lightkurve as lk
 from astropy.io import fits
 from astropy import units as u
@@ -10,9 +11,11 @@ from astroquery.sdss import SDSS
 from astroquery.gaia import Gaia
 from astroquery.vizier import Vizier
 from astropy.coordinates import SkyCoord
+import sys
 '''
 todo
 - what if the input ra dec aren't in degrees
+- (Isabella): handle case of wrong input file
 '''
 
 def read_table(fname):
@@ -56,9 +59,9 @@ def load_gaia(ra, dec, dr=2):
 
     coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
     try:
-        cat=Vizier.query_region(coord, catalog=GAIA_CATALOG, radius=1*u.arcsecond)
+        cat=Vizier.query_region(coord, catalog=GAIA_CATALOG, radius=2*u.arcsecond)
         cat=cat[0].to_pandas()
-        return cat['Source'], cat['Teff'], cat['Rad'], cat['Lum']
+        return float(cat['Source'].to_numpy()), float(cat['Teff'].to_numpy()), float(cat['Rad'].to_numpy()), float(cat['Lum'].to_numpy())
     except:
         print('Object with (RA,Dec)=(%s,%s) not found.'%(ra,dec))
         return np.nan, np.nan, np.nan, np.nan
@@ -79,7 +82,7 @@ def load_sdss(ra, dec):
 
     coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
     try:
-        cat=Vizier.query_region(coord, catalog=SDSS_CATALOG, radius=1*u.arcsecond)
+        cat=Vizier.query_region(coord, catalog=SDSS_CATALOG, radius=2*u.arcsecond)
         cat=cat[0].to_pandas().iloc[0]
         sdss_id= cat['SDSS12']
     except:
@@ -141,20 +144,7 @@ def load_tess(ra, dec):
         print('TIC %s not found.' % TICID)
         return np.nan, np.nan, np.nan
     
-##################################################################################
-### TEST OBJECT
-##################################################################################
 
-#a completely random star I selected
-ra  =  10.187604
-dec =  0.21871262
-
-#coordinates of star to use for testing
-test_crd = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
-
-##################################################################################
-### FUNCTION: OBTAIN SPECTRUM OF OBJECT FROM SDSS
-##################################################################################
 def get_spectrum(ra, dec):
     '''
     Returns the spectrum of input star from SDSS.
@@ -169,61 +159,17 @@ def get_spectrum(ra, dec):
     '''
 
     coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
-    sp = SDSS.get_spectra(coordinates = coord, radius=1*u.arcsec)[0][1]
 
-    sp_data = sp.data
+    try:
+        sp = SDSS.get_spectra(coordinates = coord, radius=2*u.arcsec)[0][1]
 
-    sp_flux = sp_data.flux
-    sp_lambda = 10**sp_data.loglam #lambda is returned in log space
+        sp_data = sp.data
+
+        sp_flux = sp_data.flux
+        sp_lambda = 10**sp_data.loglam #lambda is returned in log space
+
+    except(ValueError, RuntimeError, TypeError):
+        return(-99, -99)
 
     return sp_lambda, sp_flux
-
-##################################################################################
-### FUNCTION: PLOT THE SPECTRUM
-##################################################################################
-
-def plot_spectrum(wave, flux):
-    '''
-    Inputs:  Two lists, one for the wavelength and one for the fluxes in the spectrum
-    Returns: Nothing, outputs a plot for visualization
-    '''
-
-    fig, ax = plt.subplots(figsize = (10, 5))
-    ax.plot(wave, flux, lw = 2, color = 'k')
-    ax.set_xlabel(r'$\rm{Wavelength \ [\AA]}$', fontsize = 14)
-    ax.set_ylabel(r'$\mathrm{Flux \ [arbitrary units]}$', fontsize = 14)
-    return ax
-
-##################################################################################
-### FUNCTION: PLOT HR DIAGRAM
-##################################################################################
-
-def plot_hrd(teff, logg):
-    '''
-    Inputs:  Two lists, one for the effective temperature and one for the radius
-    Returns: Nothing, outputs a plot for visualization
-    '''
-
-    fig, ax = plt.subplots(figsize = (10, 5))
-    logg = logg[teff>=0]
-    teff = teff[teff>=0]
-    ax.scatter(teff, logg, color = 'grey')
-    plt.gca().invert_xaxis()
-    ax.set_xlabel(r'$\rm{T_\mathrm{eff} \ [K]}$', fontsize = 14)
-    ax.set_ylabel(r'$\mathrm{Log(g) \ [dex]}$', fontsize = 14)
-    return ax
-
-##################################################################################
-### FUNCTION: TEST THE FUNCTIONS
-##################################################################################
-
-wave, flux = get_spectrum(test_crd)
-teff, logg = get_params()
-ax1 = plot_hrd(teff,logg)
-plt.show()
-ax2 = plot_spectrum(wave, flux)
-exit()
-
-
-
 

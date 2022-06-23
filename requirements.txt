@@ -11,3 +11,5 @@ sys
 re
 json
 time
+lightkurve
+pandas
