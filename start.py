@@ -10,105 +10,89 @@ from astroquery.sdss import SDSS
 from astroquery.gaia import Gaia
 from astroquery.vizier import Vizier
 
-
-ras=[ 81.66624828,  15.93297599,  94.68759165]
-decs=[-57.15631429, -70.87244641, -63.50390637]
-ra =  10.187604
-dec = 0.21871262
-GAIA_CATALOG='I/345/gaia2'
-GAIA_CATALOG='I/355/gaiadr3'
-SDSS_CATALOG='V/147/sdss12'
-
-test_crd = SkyCoord(ra=ras*u.deg, dec=decs*u.deg)
-cat=Vizier.query_region(test_crd, catalog=GAIA_CATALOG, radius=1*u.arcsecond)
-print(cat)
-cat=cat.to_pandas()
-
-print(cat[['RA_ICRS','DE_ICRS','Source','logg','Teff','SDSS13']])
-print('\n')
-cat=Vizier.query_region(test_crd, catalog=SDSS_CATALOG, radius=1*u.arcsecond)
-cat=cat[0].to_pandas()
-
-print(cat['RA_ICRS'][0],cat['DE_ICRS'][0],cat['SDSS12'][0])
-
-exit()
-
-# Gaia.MAIN_GAIA_TABLE = "gaiadr2.gaia_source"  # Reselect Data Release 2, default
-ra =  10.187604
-dec = 0.21871262
-test_crd = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
-
-query1 = """SELECT 
-TOP 10
-source_id, ra, dec, parallax 
-FROM gaiadr2.gaia_source
-"""
-# radius = u.Quantity(1.0, u.deg)
-# j = Gaia.cone_search_async(test_crd, radius)
-# r = j.get_results()
-
-job = Gaia.launch_job_async("select top 100 designation,ra,dec "
-                            "from gaiadr2.gaia_source order by source_id")
-
-GaiaDR2SourceID = str(4769316162914833408)
-
-query = "SELECT TOP 1 source_id, ra, dec FROM gaiadr2.gaia_source WHERE ra = %s, dec = %s" % (ra,dec)
-query = "SELECT TOP 1 source_id, ra, dec FROM gaiadr2.gaia_source WHERE source_id = " + str(5889388490662572288)#+ str(1635721458409799680)
-
-print(query)
-job = Gaia.launch_job(query)
-results = job.get_results()
-
-print(results)
-exit()
 '''
-from astroquery.gaia import Gaia
->>>
-job = Gaia.launch_job("select top 100 "
-                      "solution_id,ref_epoch,ra_dec_corr,astrometric_n_obs_al, "
-                      "matched_observations,duplicated_source,phot_variable_flag "
-                      "from gaiadr2.gaia_source order by source_id")
-r = job.get_results()
-print(r['ra_dec_corr'])
- ra_dec_corr
- '''
-
-
-''' 
-grab spectrum from SDSS and plot
-use SQL to get teff, radius of star and make HRDiagram
-use SQL to get stellar parameters from Gaia
-sample of 100 stars
-error handling if source is not in Gaia, or not in SDSS
-
-
-1. HR diagram
-2. spectrum
-3.
-
-
-workflow :
-- input N stars' ra/dec
-- use SDSS to get their
-
+todo
+- what if the input ra dec aren't in degrees
 '''
 
-
-def get_params(N=1):
-    f = open('query.txt','r')
-    query = f.read()
-    print(query)
-    res   = SDSS.query_sql(query)
-    print(res)
-    exit()
-    return res['teff'].data, res['logg'].data
+def read_table(fname):
+    '''
+    Read in stars from a file if it exists with columns RA & Dec.
     
+    Args:
+        fname (str): name of file that contains stars to read in.
+
+    Returns:
+        ra (array): right ascension (ra) values of input stars.
+        dec (array): declination (dec) values of input stars.
+    '''
+
+    df = pd.read_csv(fname, names=['ra','dec'])
+    return df['ra'].to_numpy(), df['dec'].to_numpy()
+
+def load_gaia(ra, dec, dr=2):
+    '''
+    Read in Gaia data from Gaia DR2, and returns stellar parameters & Gaia IDs.
+
+    Args:
+        ra (float): ra values of input stars.
+        dec (float): dec values of input stars.
+        dr (int): Gaia data release no. Default is 2.
+
+    Returns:
+        gaia_id (int): Gaia Source IDs for all stars.
+        teff (float): stellar effective temperature in Kelvin.
+        rad (float): stellar radius in solar units.
+        lum (float): stellar luminosity in solar units.
+    '''
+
+    if dr == 2:
+        GAIA_CATALOG='I/345/gaia2'
+    elif dr == 3:
+        GAIA_CATALOG='I/355/gaiadr3'
+    else:
+        print('This GAIA version does not exist. Please specify either 2 or 3.')
+        sys.exit()
+
+    coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+    try:
+        cat=Vizier.query_region(coord, catalog=GAIA_CATALOG, radius=1*u.arcsecond)
+        cat=cat[0].to_pandas()
+        return cat['Source'], cat['Teff'], cat['Rad'], cat['Lum']
+    except:
+        print('Object with (RA,Dec)=(%s,%s) not found.'%(ra,dec))
+        return np.nan, np.nan, np.nan, np.nan
+
+def load_sdss(ra, dec):
+    '''
+    Read in Gaia data from Gaia DR2.
+
+    Args:
+        ra (float): ra of input stars.
+        dec (float): dec of input stars.
+    
+    Returns:
+        sdss_ids (array): SDSS ID of input star.
+    '''
+
+    SDSS_CATALOG='V/147/sdss12'
+
+    coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+    try:
+        cat=Vizier.query_region(coord, catalog=SDSS_CATALOG, radius=1*u.arcsecond)
+        cat=cat[0].to_pandas().iloc[0]
+        sdss_id= cat['SDSS12']
+    except:
+        print('Object with (RA,Dec)=(%s,%s) not found.'%(ra,dec))
+        sdss_id = np.nan
+    return sdss_id
+
 ##################################################################################
 ### TEST OBJECT
 ##################################################################################
 
 #a completely random star I selected
-ra =  10.187604
+ra  =  10.187604
 dec = 0.21871262
 
 
@@ -118,23 +102,28 @@ test_crd = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
 ##################################################################################
 ### FUNCTION: OBTAIN SPECTRUM OF OBJECT FROM SDSS
 ##################################################################################
-def get_spectrum(crd):
+def get_spectrum(ra, dec):
     '''
-    Input:    An astropy SkyCoord object for the desired target
-    Returns:  The wavelength and flux of the SDSS spectrum
+    Returns the spectrum of input star from SDSS.
+
+    Args:
+        ra (float): ra of input stars.
+        dec (float): dec of input stars.
+    
+    Returns:
+        sp_lambda (array): wavelength in SDSS spectrum
+        sp_flux (array): flux in SDSS spectrum
     '''
 
-    sp = SDSS.get_spectra(coordinates = crd, radius=2*u.arcsec)[0][1]
+    coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+    sp = SDSS.get_spectra(coordinates = coord, radius=1*u.arcsec)[0][1]
 
     sp_data = sp.data
 
     sp_flux = sp_data.flux
     sp_lambda = 10**sp_data.loglam #lambda is returned in log space
 
-    return(sp_lambda, sp_flux)
-
-
-
+    return sp_lambda, sp_flux
 
 ##################################################################################
 ### FUNCTION: PLOT THE SPECTRUM
@@ -145,6 +134,7 @@ def plot_spectrum(wave, flux):
     Inputs:  Two lists, one for the wavelength and one for the fluxes in the spectrum
     Returns: Nothing, outputs a plot for visualization
     '''
+
     fig, ax = plt.subplots(figsize = (10, 5))
     ax.plot(wave, flux, lw = 2, color = 'k')
     ax.set_xlabel(r'$\rm{Wavelength \ [\AA]}$', fontsize = 14)
@@ -160,6 +150,7 @@ def plot_hrd(teff, logg):
     Inputs:  Two lists, one for the effective temperature and one for the radius
     Returns: Nothing, outputs a plot for visualization
     '''
+    
     fig, ax = plt.subplots(figsize = (10, 5))
     logg = logg[teff>=0]
     teff = teff[teff>=0]
@@ -178,7 +169,6 @@ teff, logg = get_params()
 ax1 = plot_hrd(teff,logg)
 plt.show()
 ax2 = plot_spectrum(wave, flux)
-query_object_catalogs('', 'Gaia DR1 TGA')
 exit()
 
 
