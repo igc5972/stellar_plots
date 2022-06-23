@@ -2,14 +2,14 @@
 ### IMPORT STATEMENTS
 ##################################################################################
 import numpy as np
-from matplotlib import pyplot as plt
-from astropy.coordinates import SkyCoord
-from astropy import units as u
+import lightkurve as lk
 from astropy.io import fits
+from astropy import units as u
+from matplotlib import pyplot as plt
 from astroquery.sdss import SDSS
 from astroquery.gaia import Gaia
 from astroquery.vizier import Vizier
-
+from astropy.coordinates import SkyCoord
 '''
 todo
 - what if the input ra dec aren't in degrees
@@ -87,6 +87,23 @@ def load_sdss(ra, dec):
         sdss_id = np.nan
     return sdss_id
 
+def load_tess(ra, dec, dr=2):
+    '''
+    Load in photometry from TESS if exists. Example: KIC 3733346 (287.11345099999994, 38.81283)
+
+    Args:
+        ra (float): ra values of input stars.
+        dec (float): dec values of input stars.
+
+    Returns:
+        
+    '''
+    
+    coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+    lk.search_lightcurve('KIC 3733346', author='Kepler')
+    
+
+
 ##################################################################################
 ### TEST OBJECT
 ##################################################################################
@@ -150,7 +167,7 @@ def plot_hrd(teff, logg):
     Inputs:  Two lists, one for the effective temperature and one for the radius
     Returns: Nothing, outputs a plot for visualization
     '''
-    
+
     fig, ax = plt.subplots(figsize = (10, 5))
     logg = logg[teff>=0]
     teff = teff[teff>=0]
