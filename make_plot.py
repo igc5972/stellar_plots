@@ -71,7 +71,7 @@ def plotting(wave, flux, teff, logg, ra, dec, z):
         ax2.scatter(teff, logg, color = 'red', marker = 's', zorder = 1E6)
 
         #Plot the HR background of full Gaia Datasource
-        full_t, full_g = np.loadtxt('full_hr.txt', skiprows = 1, unpack = True)
+        full_t, full_g = np.loadtxt('./data/full_hr.txt', skiprows = 1, unpack = True)
         ax2.scatter(full_t, full_g, color = 'gray')
 
     
