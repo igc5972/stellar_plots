@@ -1,4 +1,3 @@
-
 import os, sys, re, json, time
 import requests
 import numpy as np
@@ -9,9 +8,9 @@ from astroquery.mast import Catalogs
 from astropy.table import Table, Column, Row
 from astropy.wcs import WCS
 
-from urllib.parse import quote as urlencode
-from urllib.request import urlretrieve
-import http.client as httplib
+#from urllib.parse import quote as urlencode
+#from urllib.request import urlretrieve
+#import http.client as httplib
 
 
 def mastQuery(request):
