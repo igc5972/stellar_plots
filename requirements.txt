@@ -11,3 +11,4 @@ astroquery
 os-sys
 lightkurve
 pandas
+pywebview
