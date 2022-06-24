@@ -8,8 +8,7 @@ keyring
 beautifulsoup4
 html5lib
 astroquery
-os
-sys
+os-sys
 re
 json
 time
