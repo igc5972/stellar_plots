@@ -10,9 +10,8 @@ The output produces a figure for each source in the list with subplots pulling d
 
 ## To run in Python:
 
-from stellar_plots.driver import output_figures as main
-
 ```
+from stellar_plots.driver import output_figures as main
 main('/path/to/list/of/coordinates.csv', '/path/to/output/pdftosave.pdf')
 ```
 
