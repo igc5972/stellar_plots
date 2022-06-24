@@ -4,8 +4,6 @@ requests
 astropy
 urllib3
 astroquery
-http
-requests
 os
 sys
 re
