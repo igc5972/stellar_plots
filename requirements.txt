@@ -9,7 +9,6 @@ beautifulsoup4
 html5lib
 astroquery
 os-sys
-time
 lightkurve
 pandas
 warnings
