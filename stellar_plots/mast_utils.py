@@ -1,4 +1,4 @@
-import os, sys, re, json, time
+import os, sys, json, time
 import requests
 import numpy as np
 import astropy.units as u
