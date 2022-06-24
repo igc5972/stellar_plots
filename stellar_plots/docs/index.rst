@@ -10,6 +10,8 @@ Welcome to Stellar Plots's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   installation.rst
+   usage.rst
    driver.rst
    utils.rst
    make_plot.rst

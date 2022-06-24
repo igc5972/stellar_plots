@@ -60,7 +60,6 @@ def output_figures(input_file, output_save_dir_plus_name):
         wave, flux = get_spectrum(r, d)
         days, norm_flux = -99, -99
 
-        print(temp, lum)
 
         #Call function to make plot
         temp_img = plotting(wave, flux, temp, lum, r, d, days, norm_flux)
