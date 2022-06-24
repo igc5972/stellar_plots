@@ -1,0 +1,9 @@
+.. _util:
+
+Utility Functions
+=====================
+
+Utility functions for getting data.
+
+.. automodule:: util
+   :members:
