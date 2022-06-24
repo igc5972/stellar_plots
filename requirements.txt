@@ -3,6 +3,10 @@ matplotlib
 requests
 astropy
 urllib3
+requests
+keyring
+beautifulsoup4
+html5lib
 astroquery
 os
 sys
