@@ -17,4 +17,4 @@ Next, install ``stellar_plots``:
 
 .. code-block:: bash
 	
-	$ pip install stellar_plots==0.0.2
+	$ pip install stellar_plots==0.0.3
