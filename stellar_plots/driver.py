@@ -58,7 +58,7 @@ def output_figures(input_file, output_save_dir_plus_name):
         source, temp, radius, lum = load_gaia(r, d)
         sdss_id = load_sdss(r, d)
         wave, flux = get_spectrum(r, d)
-        days, norm_flux = -99, -99
+        days, norm_flux, _ = load_tess(r, d)
 
 
         #Call function to make plot

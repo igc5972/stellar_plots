@@ -63,6 +63,7 @@ def plotting(wave, flux, teff, logg, ra, dec, days, norm_flux):
         flux = [f/max(flux) for f in flux] #normalize flux for plotting
         ax1.plot(wave, flux, lw = 2, color = 'k')
 
+
     ### Light Curve
     ax4.set_xlabel(r'$\rm{Time [Days]}$', fontsize = 14)
     ax4.set_ylabel(r'$\mathrm{Normalized Flux}$', fontsize = 14)
