@@ -6,10 +6,22 @@
 ### PURPOSE: Import Statements
 ##################################################################################
 from matplotlib.backends.backend_pdf import PdfPages
-from make_plot import plotting
-from utils import *
+import sys
+
+try:
+    from make_plot import plotting as plotting
+except ImportError:
+    from .make_plot import plotting as plotting
+try:
+    from utils import *
+except ImportError:
+    from .utils import *
 from PIL import Image
-import io
+import warnings
+
+
+#supress all warnings from terminal
+warnings.filterwarnings("ignore")
 
 
 
@@ -42,6 +54,7 @@ def output_figures(input_file, output_save_dir_plus_name):
     #Loop through the coordinates for the sources
     for idx, (r, d) in enumerate(zip(ras, decs)):
 
+
         source, temp, radius, lum = load_gaia(r, d)
         sdss_id = load_sdss(r, d)
         wave, flux = get_spectrum(r, d)
@@ -69,5 +82,7 @@ def output_figures(input_file, output_save_dir_plus_name):
 
 
 
-output_figures("/Users/astro/Desktop/sample.csv", "/Users/astro/Desktop/test.pdf")
-
+if __name__ == "__main__":
+    input = str(sys.argv[1])
+    output = str(sys.argv[2])
+    output_figures(input, output)

@@ -13,3 +13,4 @@ json
 time
 lightkurve
 pandas
+warnings

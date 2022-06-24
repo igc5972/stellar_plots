@@ -30,10 +30,14 @@ def read_table(fname):
         dec (array): declination (dec) values of input stars.
     '''
 
-    df = pd.read_csv(fname, names=['ra','dec'])
+    #ra, dec = np.loadtxt(fname, skiprows = 0, unpack = True, delimiter = ',')
+    #return ra, dec
+    df = pd.read_csv(fname, names=['ra','dec'], on_bad_lines='skip')
     return df['ra'].to_numpy(), df['dec'].to_numpy()
+    
 
 def load_gaia(ra, dec, dr=2):
+
     '''
     Read in Gaia data from Gaia DR2, and returns stellar parameters & Gaia IDs.
 
@@ -57,13 +61,13 @@ def load_gaia(ra, dec, dr=2):
         print('This GAIA version does not exist. Please specify either 2 or 3.')
         sys.exit()
 
-    coord = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+    coord = SkyCoord(ra=ra, dec=dec, unit = (u.deg, u.deg))
     try:
         cat=Vizier.query_region(coord, catalog=GAIA_CATALOG, radius=2*u.arcsecond)
         cat=cat[0].to_pandas()
         return float(cat['Source'].to_numpy()), float(cat['Teff'].to_numpy()), float(cat['Rad'].to_numpy()), float(cat['Lum'].to_numpy())
     except:
-        print('Object with (RA,Dec)=(%s,%s) not found.'%(ra,dec))
+        #print('Object with (RA,Dec)=(%s,%s) not found.'%(ra,dec))
         return np.nan, np.nan, np.nan, np.nan
 
 def load_sdss(ra, dec):
@@ -86,7 +90,7 @@ def load_sdss(ra, dec):
         cat=cat[0].to_pandas().iloc[0]
         sdss_id= cat['SDSS12']
     except:
-        print('Object with (RA,Dec)=(%s,%s) not found.'%(ra,dec))
+        #print('Object with (RA,Dec)=(%s,%s) not found.'%(ra,dec))
         sdss_id = np.nan
     return sdss_id
 
@@ -141,7 +145,7 @@ def load_tess(ra, dec):
         lc  = lc.normalize(unit='ppm').remove_nans().remove_outliers().flatten()
         return lc.time.value,lc.flux.value,tpf.targetid
     else: 
-        print('TIC %s not found.' % TICID)
+        #print('TIC %s not found.' % TICID)
         return np.nan, np.nan, np.nan
     
 
