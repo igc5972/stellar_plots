@@ -11,4 +11,3 @@ astroquery
 os-sys
 lightkurve
 pandas
-warnings
