@@ -1,9 +1,9 @@
 numpy
 matplotlib
 requests
-astrapy
+astropy
+urllib3
 astroquery
-urllib
 http
 requests
 os
